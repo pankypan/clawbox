@@ -229,7 +229,12 @@ Resources:
                 created = []
                 for az, sid in seen_az.items():
                   if az not in existing:
-                    efs.create_mount_target(FileSystemId=fsid, SubnetId=sid, SecurityGroups=[sg])
+                    for _r in range(12):
+                      try:
+                        efs.create_mount_target(FileSystemId=fsid, SubnetId=sid, SecurityGroups=[sg]);break
+                      except Exception as _e:
+                        if 'AccessDeniedException' in str(_e) and _r<11:L.info(f"IAM propagation wait {_r+1}");time.sleep(10);continue
+                        raise
                     created.append(az)
                     L.info(f"Created mount target in {az} ({sid})")
                   else:
